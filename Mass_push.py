@@ -1,8 +1,9 @@
 from netmiko import ConnectHandler
 #from dotenv import load_dotenv
-from dotenv import dotenv_values
+#from dotenv import dotenv_values
 import getpass
 import time
+from rich.console import Console
 
 
 class Site:
@@ -13,6 +14,7 @@ class Site:
         self.password = password
         self.secret = secret
         self.ip=''
+        self.console = Console()
 
     def Connect(self):
         #Connect to a device.
@@ -61,111 +63,30 @@ class Site:
         if network_ip == None:
             network_ip = input('Enter the network IP for the site: ')
 
-        #Detect if no devices were passed.
-        if self.devices == []:
-            ask = input('No device IPs were specified.  Provision devices by range?')
-            if ask[0:1] == 'y' or ask[0:1] == 'Y':
-                # if yes do this
-                self.ask_range = input('From ip: ')
-                while type(self.ask_range) != int:
-                    try:
-                        self.ask_range=int(self.ask_range)
-                    except:
-                        print('Must be an integer.  Example: 2 to start at [NetworkIP].2')
-                        self.ask_range = input('From ip: ')
-
-                self.ask_range_end = input('End ip: ')
-                while type(self.ask_range_end) != int:
-                    try:
-                        self.ask_range_end = int(self.ask_range_end)
-                    except:
-                        print('Must be an integer.  Example: 10 to end on the [NetworkIP].10')
-                        self.ask_range_end = input('End ip: ')
-                
-                counter = self.ask_range
-                while counter <= self.ask_range_end:
-                    self.devices.append(counter)
-                    counter+=1
-
-                for i in self.devices:
-                    print(network_ip + '.' +str(i) + '\n')
-                ask = input('The above devices will be provisioned.  Continue? (y/n)')
-                if ask[0:1] == 'y' or ask[0:1] == 'Y':
-                    pass
-                elif ask[0:1] == 'n' or ask[0:1] == 'N':
-                    print('Option No selected.  Exiting session.')
-                    exit()
-                else:
-                    counter = 0
-                    while counter <= 5:
-                        print('Response must be yes or no. (y/n, Y/N)')
-                        ask = input('Continue to provision the above devices? (Y/N)')
-                        counter+=1
-                        if counter == 5:
-                            print('Maximum number of tries exceeded.  Exiting session. . .')
-                            exit()
-
-                        if ask[0:1] == 'Y' or ask[0:1] == 'y':
-                            break
-                        elif ask[0:1] == 'n' or ask[0:1] == 'N':
-                            print('Option No selected.  Exiting session.')
-                            exit()
-                        else:
-                            pass
-
-            else:
-                #When option no is selected.
-                print('Option No selected.  Exiting session.')
-                exit()
-
-        #Actually pushes the provision.
+        total_output=''
+        #Actually pushes the CMDs.
         for i in self.devices:
             self.ip = network_ip+'.'+str(i)
-            print('Connecting to ' + self.ip)
-            ssh = self.Connect()
+            self.console.print('Connecting to ' + self.ip, style='green')
+            try:
+                ssh = self.Connect()
+            except:
+                #If fail to connect, then skip
+                self.console.print(self.ip+' failed to connect.', style='red')
+                continue
+
             ssh.enable()
-            if self.cmds.find('sh') != -1 and ssh.check_enable_mode() == True:
-                #TODO: Split the line with the sh command to prevent errors, i.e. enter conf mode before the show command it won't show.
-                self.response=str(ssh.send_command(self.cmds))
-                print(self.response)#Necessary for unit test
-            else: 
-                ssh.write_channel(self.cmds)
+            for line in self.cmds.split('\n'):
+                if line.find('sh') != -1 and ssh.check_enable_mode() == True:
+                    #TODO: Split the line with the sh command to prevent errors, i.e. enter conf mode before the show command it won't show.
+                    self.response=str(ssh.send_command(line))
+                    print(self.response)#Necessary for unit test
+                    total_output+='\ncurrent: '+self.ip+'\n'+self.response
+                else: 
+                    ssh.write_channel(line)
 
 
             ssh.disconnect()
+        return total_output
         
-
-#Sample run statement.
-if __name__ == "__main__":
-    #load_dotenv() #works without having to parse dictionary if on Linux
-    
-    credentials = dotenv_values('creds.env')
-    USER=credentials['USER']
-    PASSWORD=credentials['PASSWORD']
-    SECRET=credentials['SECRET']
-   
-    run = Site(USER, PASSWORD, SECRET)
-
-    exit()
-
-    #Connect to a device and enter cli mode
-    #run.Enter_cli()#TODO: Add if statements for other modes and exiting those modes.
-
-
-    #Optional:  enter the last octet of the specific device IP you want to grab. 
-    #TODO: Account for subnets other than /24+
-    devices=[48]
-
-    #Enter your commands here:
-    config = """
-
-    reload in 007:00
-    y
-
-    y
-
-    """
-    #run.Enter_cli()
-    run.Mass_push(devices, config, '10.251.11') #Can pass and empty array to specify a range or pass specific devices
-
 
