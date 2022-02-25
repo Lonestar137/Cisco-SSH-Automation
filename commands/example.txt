@@ -2,8 +2,4 @@
 
 sh run | i hostname
 
-sh run | i int status
-
-conf t 
-int gi0/1
-description desc for int gi0/1
+sh run | i username
