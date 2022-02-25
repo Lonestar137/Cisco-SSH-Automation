@@ -1,6 +1,4 @@
 from netmiko import ConnectHandler
-#from dotenv import load_dotenv
-#from dotenv import dotenv_values
 import getpass
 import time
 from rich.console import Console

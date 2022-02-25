@@ -1,7 +1,5 @@
 from Mass_push import Site
 from decouple import config
-import getpass
-import time
 import threading
 from rich.console import Console
 

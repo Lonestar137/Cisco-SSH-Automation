@@ -1,34 +1,30 @@
+## Requirements
+
+#### Python  
+You will need to install Python 3+ and install the following modules:  pygraphviz, python-decouple, getpass, rich
+`pip3 install -r requirements.txt`
+
+#### Graphviz
+
+You will also need to install the [Graphviz](https://graphviz.org/download/) library applicable to your OS.   
 
 ## Getting started:
 
-1.  Rename the *creds_example.env* file to *creds.env*.
+1.  Rename the *creds_example.env* file to *.env*. The file is now hidden inside the current directory.
 
-2.  Then, change the environment variables from EX_USER to USER, etc. . .
-    Store your credentials in the creds.env folder.
+2.  Then, change the environment variables inside the .env file to match the credentials you would use to log into the devices.
+Create a .txt file inside the commands folder with whatever command you want to run on each device.
+Then, you need to set the `FILE` variable inside `.env` to the name of the .txt file you just created.
 
-3.  Open main.py
+3.  Inside `.env` define the device IP's you want to run command on.  There are examples inside the `examples_cred.env` file on how this should be formatted.
 
-4.  Ensure that credentials are properly stored in USER, PASSWORD, and SECRET variables.
-
-5.  Initialize the Site class as:
-
-    from Mass_push import Site  
-
-    device = Site(USER, PASSWORD, SECRET)
-
-6.  You can now call the other functions in the class to provision devices.
+4.  Now, navigate to the folder inside a terminal and run the `main.py` file with Python:
+`python main.py` or `python3 main.py`
 
 
 ### Push to multiple devices at once 
 
-1.  Define the address of the device(s) in the format of:  x.x.x [1, 2, 3, 4] and pass the device list to the mass_push function. 
-
-2.  Example: Site.Mass_push('192.168.1', [2, 3, 4], 'show run')
-        This example would contact 192.168.1.2, 192.168.1.3, 192.168.1.4
-
-### Debugging with basic CLI
-
-1.  Call: `Site.enter_cli()` to enter a basic CLI mode.
-
+1.  To run the program on multiple device sets asynchronously, you can enable the `SITE2_ENABLED` to `True` and then define the device IP's in the same format as `SITE1` to run commands on two sets of devices at once.
+More worker threads are supported, you can add them in `main.py` using the Thread module.
 
 
