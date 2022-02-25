@@ -119,7 +119,7 @@ class Site:
             ssh = self.Connect(ip)
         except:
             #If fail to connect, then skip
-            self.console.print(self.ip+' failed to connect.', style='red')
+            self.console.print(ip+' failed to connect.', style='red')
             return 0
 
         ssh.enable()
