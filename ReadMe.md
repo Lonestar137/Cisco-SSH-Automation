@@ -24,7 +24,6 @@ Then, you need to set the `FILE` variable inside `.env` to the name of the .txt 
 
 ### Push to multiple devices at once 
 
-1.  To run the program on multiple device sets asynchronously, you can enable the `SITE2_ENABLED` to `True` and then define the device IP's in the same format as `SITE1` to run commands on two sets of devices at once.
-More worker threads are supported, you can add them in `main.py` using the Thread module.
+1.  To run the program on multiple device sets asynchronously, you can set the `TYPE` variable equal to singlemode or multimode.  Multimode will log into devices 5x faster than singlemode which logs into devices one at a time.
 
 
